@@ -1,8 +1,10 @@
-package com.ET.telechat;
+package com.ET.telechat.Activities;
 
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.os.Bundle;
+
+import com.ET.telechat.R;
 
 public class MainActivity extends AppCompatActivity {
 
