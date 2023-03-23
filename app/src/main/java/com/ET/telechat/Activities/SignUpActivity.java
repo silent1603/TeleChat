@@ -1,5 +1,7 @@
 package com.ET.telechat.Activities;
 
+import static com.ET.telechat.Utilities.UIHelpers.showToast;
+
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -9,27 +11,32 @@ import android.provider.MediaStore;
 import android.util.Base64;
 import android.util.Patterns;
 import android.view.View;
-import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.ET.telechat.Models.Users;
 import com.ET.telechat.Utilities.Constants;
 import com.ET.telechat.Utilities.PreferenceManager;
 import com.ET.telechat.databinding.ActivitySignUpBinding;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.AuthResult;
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.io.ByteArrayOutputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
-import java.util.HashMap;
 
 public class SignUpActivity extends AppCompatActivity {
 
-    ActivitySignUpBinding binding;
-    PreferenceManager preferenceManager;
-    FirebaseFirestore database;
+    private ActivitySignUpBinding binding;
+    private PreferenceManager preferenceManager;
+    private FirebaseFirestore database;
+    private FirebaseAuth auth;
     private String encodedImage;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -45,6 +52,7 @@ public class SignUpActivity extends AppCompatActivity {
     {
         binding = ActivitySignUpBinding.inflate(getLayoutInflater());
         database = FirebaseFirestore.getInstance();
+        auth = FirebaseAuth.getInstance();
         preferenceManager = new PreferenceManager(getApplicationContext());
     }
 
@@ -54,7 +62,7 @@ public class SignUpActivity extends AppCompatActivity {
             onBackPressed();
         });
 
-        binding.buttonSignIn.setOnClickListener( v -> {
+        binding.buttonSignUp.setOnClickListener( v -> {
             if(isValidSignUpDetails())
             {
                 signUp();
@@ -74,34 +82,42 @@ public class SignUpActivity extends AppCompatActivity {
 
     }
 
-    private void showToast(String message)
-    {
-        Toast.makeText(getApplicationContext(),message,Toast.LENGTH_SHORT).show();
-    }
 
     private void signUp()
     {
         loading(true);
-        HashMap<String,Object> user = new HashMap<>();
-        user.put(Constants.KEY_NAME,binding.inputName.getText().toString());
-        user.put(Constants.KEY_EMAIL,binding.inputEmail.getText().toString());
-        user.put(Constants.KEY_PASSWORD,binding.inputPassword.getText().toString());
-        user.put(Constants.KEY_IMAGE,encodedImage);
-        database.collection(Constants.KEY_COLLECTION_USERS)
-                .add(user)
-                .addOnSuccessListener(documentReference -> {
-                    loading(false);
-                    preferenceManager.putBoolean(Constants.KEY_IS_SIGNED_IN,true);
-                    preferenceManager.putString(Constants.KEY_USER_ID,documentReference.getId());
-                    preferenceManager.putString(Constants.KEY_NAME,binding.inputName.getText().toString());
-                    preferenceManager.putString(Constants.KEY_IMAGE,encodedImage);
-                    Intent intent = new Intent(getApplicationContext(),MainActivity.class);
-                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-                    startActivity(intent);
-                }).addOnFailureListener(exception -> {
-                    loading(false);
-                    showToast(exception.getMessage());
-                });
+        auth.createUserWithEmailAndPassword(binding.inputEmail.getText().toString(), binding
+                .inputPassword.getText().toString()).addOnCompleteListener(new OnCompleteListener<AuthResult>() {
+            @Override
+            public void onComplete(@NonNull Task<AuthResult> task) {
+
+                if (task.isSuccessful()) {
+                    Users user = new Users(binding.inputName.getText().toString(),encodedImage, task.getResult().getUser().getUid(), binding.inputPassword.getText().toString(),binding.inputEmail.getText().toString());
+                    database.collection(Constants.KEY_COLLECTION_USERS)
+                            .add(user)
+                            .addOnSuccessListener(documentReference -> {
+                                loading(false);
+                                preferenceManager.putBoolean(Constants.KEY_IS_SIGNED_IN,true);
+                                preferenceManager.putString(Constants.KEY_USER_ID,documentReference.getId());
+                                preferenceManager.putString(Constants.KEY_NAME,binding.inputName.getText().toString());
+
+                                preferenceManager.putString(Constants.KEY_IMAGE,encodedImage);
+                                Intent intent = new Intent(getApplicationContext(),MainActivity.class);
+                                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                                startActivity(intent);
+                            }).addOnFailureListener(exception -> {
+                                loading(false);
+                                showToast(getApplicationContext(),exception.getMessage());
+                            });
+
+                  showToast( getApplicationContext(),"User Created Successfully");
+                } else {
+                    showToast(getApplicationContext(), task.getException().getMessage());
+                }
+            }
+        });
+
+
     }
 
     private String encodeImage(Bitmap bitmap)
@@ -144,43 +160,43 @@ public class SignUpActivity extends AppCompatActivity {
     {
 
         if (encodedImage == null) {
-            showToast("Select profile image");
+            showToast(getApplicationContext(),"Select profile image");
             return false;
         }
 
         if (binding.inputName.getText().toString().trim().isEmpty()) {
-            showToast("Enter name");
+            showToast(getApplicationContext(),"Enter name");
             return false;
         }
 
         if (binding.inputEmail.getText().toString().trim().isEmpty()) {
-            showToast("Enter email");
+            showToast(getApplicationContext(),"Enter email");
             return false;
         }
 
         if (!Patterns.EMAIL_ADDRESS.matcher(binding.inputEmail.getText().toString()).matches()) {
-            showToast("Enter valid email");
+            showToast(getApplicationContext(),"Enter valid email");
             return false;
         }
 
         if (binding.inputPassword.getText().toString().trim().isEmpty()) {
-            showToast("Enter password");
+            showToast(getParent().getApplicationContext(), "Enter password");
             return false;
         }
 
         if (binding.inputPassword.getText().toString().trim().isEmpty()) {
-            showToast("Enter password");
+            showToast(getApplicationContext(),"Enter password");
             return false;
         }
 
         if (binding.inputConfirmPassword.getText().toString().trim().isEmpty()) {
-            showToast("Enter Confirm password");
+            showToast(getApplicationContext(),"Enter Confirm password");
             return false;
         }
 
         if(!binding.inputPassword.getText().toString().equals(binding.inputConfirmPassword.getText().toString()))
         {
-            showToast("Password & confirm password must be same");
+            showToast(getApplicationContext(),"Password & confirm password must be same");
             return  false;
         }
         return true;
@@ -190,14 +206,22 @@ public class SignUpActivity extends AppCompatActivity {
     {
         if(isLoading)
         {
-            binding.buttonSignIn.setVisibility(View.INVISIBLE);
+            binding.buttonSignUp.setVisibility(View.INVISIBLE);
             binding.progressBar.setVisibility(View.VISIBLE);
         }
         else
         {
-            binding.buttonSignIn.setVisibility(View.VISIBLE);
+            binding.buttonSignUp.setVisibility(View.VISIBLE);
             binding.progressBar.setVisibility(View.INVISIBLE);
         }
     }
 
+
+    @Override
+    public void onBackPressed() {
+        if( binding.progressBar.getVisibility() != View.VISIBLE)
+        {
+            super.onBackPressed();
+        }
+    }
 }

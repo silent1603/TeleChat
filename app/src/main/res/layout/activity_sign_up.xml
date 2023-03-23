@@ -123,7 +123,7 @@
             android:animateLayoutChanges="true">
 
             <com.google.android.material.button.MaterialButton
-                android:id="@+id/buttonSignIn"
+                android:id="@+id/buttonSignUp"
                 android:layout_width="match_parent"
                 android:layout_height="@dimen/_50sdp"
                 android:layout_marginTop="@dimen/_16sdp"
