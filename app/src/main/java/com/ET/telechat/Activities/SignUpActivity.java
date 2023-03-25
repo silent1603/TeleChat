@@ -92,7 +92,7 @@ public class SignUpActivity extends AppCompatActivity {
             public void onComplete(@NonNull Task<AuthResult> task) {
 
                 if (task.isSuccessful()) {
-                    Users user = new Users(binding.inputName.getText().toString(),encodedImage, task.getResult().getUser().getUid(), binding.inputPassword.getText().toString(),binding.inputEmail.getText().toString());
+                    Users user = new Users(binding.inputName.getText().toString(),encodedImage,binding.inputEmail.getText().toString());
                     database.collection(Constants.KEY_COLLECTION_USERS)
                             .add(user)
                             .addOnSuccessListener(documentReference -> {
@@ -100,7 +100,7 @@ public class SignUpActivity extends AppCompatActivity {
                                 preferenceManager.putBoolean(Constants.KEY_IS_SIGNED_IN,true);
                                 preferenceManager.putString(Constants.KEY_USER_ID,documentReference.getId());
                                 preferenceManager.putString(Constants.KEY_NAME,binding.inputName.getText().toString());
-
+                                preferenceManager.putString(Constants.KEY_EMAIL,binding.inputEmail.getText().toString());
                                 preferenceManager.putString(Constants.KEY_IMAGE,encodedImage);
                                 Intent intent = new Intent(getApplicationContext(),MainActivity.class);
                                 intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);

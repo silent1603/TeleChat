@@ -38,9 +38,8 @@
                 android:layout_width="@dimen/_80sdp"
                 android:layout_height="@dimen/_80sdp"
                 android:src="@drawable/background_image"
-                android:background="@color/input_background"
                 app:civ_border_width="@dimen/_2sdp"
-                app:civ_circle_background_color="@color/input_background"
+                app:civ_circle_background_color="@color/black"
                 app:civ_border_overlay= "false"
                 />
 

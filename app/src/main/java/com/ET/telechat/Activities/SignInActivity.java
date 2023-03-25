@@ -2,21 +2,34 @@ package com.ET.telechat.Activities;
 
 import static com.ET.telechat.Utilities.UIHelpers.showToast;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.util.Patterns;
 import android.view.View;
 
 
-import com.ET.telechat.R;
 import com.ET.telechat.Utilities.Constants;
 import com.ET.telechat.Utilities.PreferenceManager;
 import com.ET.telechat.databinding.ActivitySignInBinding;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.Query;
+
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 
 public class SignInActivity extends AppCompatActivity {
@@ -26,6 +39,7 @@ public class SignInActivity extends AppCompatActivity {
     private PreferenceManager preferenceManager;
     private FirebaseFirestore database;
     private FirebaseAuth auth;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -35,29 +49,29 @@ public class SignInActivity extends AppCompatActivity {
         setContentView(binding.getRoot());
     }
 
-    private void init()
-    {
+    private void init() {
 
-        PreferenceManager preferenceManager = new PreferenceManager(getApplicationContext());
-        if(preferenceManager.getBoolean(Constants.KEY_IS_SIGNED_IN))
-        {
-            Intent intent = new Intent(getApplicationContext(),MainActivity.class);
-            startActivity(intent);
-            finish();
-        }
         auth = FirebaseAuth.getInstance();
         database = FirebaseFirestore.getInstance();
+        preferenceManager = new PreferenceManager(getApplicationContext());
+        FirebaseUser user = auth.getCurrentUser();
+        if (user != null) {
+            Map<String, String> data = new HashMap<String, String>();
+            data.put(Constants.KEY_USER_ID, user.getUid().toString());
+            signInWithUserData(data);
+
+        }
+
+
         binding = ActivitySignInBinding.inflate(getLayoutInflater());
     }
 
-    private void setListensers()
-    {
-        binding.textCreateNewAccount.setOnClickListener( v -> {
-            startActivity(new Intent(getApplicationContext(),SignUpActivity.class));
+    private void setListensers() {
+        binding.textCreateNewAccount.setOnClickListener(v -> {
+            startActivity(new Intent(getApplicationContext(), SignUpActivity.class));
         });
-        binding.buttonSignIn.setOnClickListener( v -> {
-            if(isValidSignInDetails())
-            {
+        binding.buttonSignIn.setOnClickListener(v -> {
+            if (isValidSignInDetails()) {
                 signIn();
             }
         });
@@ -65,38 +79,87 @@ public class SignInActivity extends AppCompatActivity {
 
     }
 
-    private void config()
-    {
+    private void config() {
 
     }
 
 
-
-    private void signIn()
-    {
+    private void signIn() {
         loading(true);
-        database.collection(Constants.KEY_COLLECTION_USERS)
-                .whereEqualTo(Constants.KEY_NAME,binding.inputEmail.getText().toString())
-                .whereEqualTo(Constants.KEY_PASSWORD,binding.inputPassword.getText().toString())
-                .get()
-                .addOnCompleteListener( task -> {
-                   if(task.isSuccessful() && task.getResult() != null
-                   && task.getResult().getDocuments().size() > 0)
-                   {
-                       DocumentSnapshot documentSnapshot = task.getResult().getDocuments().get(0);
-                       preferenceManager.putBoolean(Constants.KEY_IS_SIGNED_IN,true);
-                       preferenceManager.putString(Constants.KEY_USER_ID,documentSnapshot.getId());
-                       preferenceManager.putString(Constants.KEY_NAME,documentSnapshot.getString(Constants.KEY_NAME));
-                       preferenceManager.putString(Constants.KEY_IMAGE,documentSnapshot.getString(Constants.KEY_IMAGE));
-                       Intent intent = new Intent(getApplicationContext(),MainActivity.class);
-                       intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-                       startActivity(intent);
-                   }else
-                   {
-                       loading(false);
-                       showToast(getApplicationContext(),"Unable to sign in");
-                   }
+        auth.signInWithEmailAndPassword(binding.inputEmail.getText().toString(), binding.inputPassword.getText().toString()).addOnCompleteListener(new OnCompleteListener<AuthResult>() {
+            @Override
+            public void onComplete(@NonNull Task<AuthResult> task)
+            {
+                loading(false);
+                if (task.isSuccessful())
+                {
+                    Map<String, String> data = new HashMap<String, String>();
+                    data.put(Constants.KEY_EMAIL, binding.inputEmail.getText().toString());
+                    data.put(Constants.KEY_PASSWORD, binding.inputPassword.getText().toString());
+                    signInWithUserData(data);
+
+                }
+                else
+                {
+                    showToast(getApplicationContext(), task.getException().getMessage());
+                }
+
+
+            }
+        });
+
+    }
+
+    private void signInWithUserData(Map<String, String> fields) {
+        Query query = database.collection(Constants.KEY_COLLECTION_USERS);
+        Iterator<Map.Entry<String, String>> iterator = fields.entrySet().iterator();
+
+        Map.Entry<String, String> entry = null;
+
+        while(iterator.hasNext())
+        {
+            entry = iterator.next();
+            query =  query.whereEqualTo(entry.getKey(),entry.getValue());
+            Log.d("TELECHAT",entry.getKey()+"_"+entry.getValue());
+        }
+        Log.d("TELECHAT",query.toString());
+
+        if (query != null) {
+                query.get().addOnCompleteListener(taskFireStore ->
+                {
+                    Log.d("TELECHAT", taskFireStore.isSuccessful() + "_" + (taskFireStore.getResult() != null) + "_" + (taskFireStore.getResult().getDocuments().size() > 0));
+                    if (taskFireStore.isSuccessful() && taskFireStore.getResult() != null
+                            && taskFireStore.getResult().getDocuments().size() > 0) {
+                        DocumentSnapshot documentSnapshot = taskFireStore.getResult().getDocuments().get(0);
+                        Map<String, Object> userData = documentSnapshot.getData();
+                        setPreferenceData(documentSnapshot,userData);
+                        Intent intent = new Intent(getApplicationContext(), MainActivity.class);
+                        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                        startActivity(intent);
+
+                    } else {
+                        showToast(getApplicationContext(), "Unable to sign in");
+
+
+                    }
                 });
+        } else
+        {
+
+
+        }
+
+}
+
+    private void setPreferenceData(DocumentSnapshot document, Map<String, Object> userData)
+
+    {
+        preferenceManager.putBoolean(Constants.KEY_IS_SIGNED_IN,true);
+        preferenceManager.putString(Constants.KEY_USER_ID,document.getId());
+        Log.d("ERROR",document.getId());
+        preferenceManager.putString(Constants.KEY_NAME,userData.get("name").toString());
+        preferenceManager.putString(Constants.KEY_EMAIL,userData.get("email").toString());
+        preferenceManager.putString(Constants.KEY_IMAGE,userData.get("profilePic").toString());
     }
 
     private void loading(Boolean isLoading)

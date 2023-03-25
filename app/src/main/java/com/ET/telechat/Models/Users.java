@@ -1,26 +1,44 @@
 package com.ET.telechat.Models;
 
-public class Users {
+import java.io.Serializable;
+
+public class Users implements Serializable {
     private String name;
     private String profilePic;
+    private String token;
 
-    private String userID;
-    private String password;
-    private String gmail;
-    public Users(String name, String profilePic, String userID, String password, String gmail) {
+
+    private String email;
+
+    public Users(String name, String profilePic, String email) {
         this.name = name;
         this.profilePic = profilePic;
-        this.userID = userID;
-        this.password = password;
-        this.gmail = gmail;
+        this.email = email;
     }
 
-    public Users(String name, String profilePic, String userID, String password) {
+    public Users(String name, String profilePic, String token, String email) {
         this.name = name;
         this.profilePic = profilePic;
-        this.userID = userID;
-        this.password = password;
+        this.token = token;
+        this.email = email;
     }
+
+    public String getToken() {
+        return token;
+    }
+
+    public void setToken(String token) {
+        this.token = token;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
 
     public String getName() {
         return name;
@@ -38,27 +56,5 @@ public class Users {
         this.profilePic = profilePic;
     }
 
-    public String getUserID() {
-        return userID;
-    }
 
-    public void setUserID(String userID) {
-        this.userID = userID;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
-
-    public String getGmail() {
-        return gmail;
-    }
-
-    public void setGmail(String gmail) {
-        this.gmail = gmail;
-    }
 }
