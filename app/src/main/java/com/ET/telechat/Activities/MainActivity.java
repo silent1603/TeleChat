@@ -74,10 +74,9 @@ public class MainActivity extends AppCompatActivity {
         database = FirebaseFirestore.getInstance();
         DocumentReference documentReference = database.collection(Constants.KEY_COLLECTION_USERS).document(preferenceManager.getString(Constants.KEY_USER_ID));
         documentReference.update(Constants.KEY_FCM_TOKEN,token)
-                .addOnSuccessListener(unused -> showToast(getApplicationContext(),"Token update successfully"))
                 .addOnFailureListener(e -> {
                     showToast(getApplicationContext(), "Unable to update token" + e.getMessage());
-                    Log.d("ERROR", e.getMessage());
+
                     });
     }
 
@@ -89,7 +88,11 @@ public class MainActivity extends AppCompatActivity {
 
     private void setListenser()
     {
+
         binding.imageSetting.setOnClickListener(v -> signOut());
+        binding.fabNewChat.setOnClickListener(v -> {
+            startActivity(new Intent(getApplicationContext(),UserActivity.class));
+        });
     }
 
     private void config()

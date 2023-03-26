@@ -57,7 +57,7 @@ public class SignInActivity extends AppCompatActivity {
         FirebaseUser user = auth.getCurrentUser();
         if (user != null) {
             Map<String, String> data = new HashMap<String, String>();
-            data.put(Constants.KEY_USER_ID, user.getUid().toString());
+            data.put(Constants.KEY_EMAIL, user.getEmail());
             signInWithUserData(data);
 
         }
@@ -142,6 +142,8 @@ public class SignInActivity extends AppCompatActivity {
 
 
                     }
+                }).addOnFailureListener( taskFailed -> {
+                    Log.d("TELECHAT", taskFailed.getMessage().toString());
                 });
         } else
         {
