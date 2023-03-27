@@ -58,6 +58,7 @@ public class SignInActivity extends AppCompatActivity {
         if (user != null) {
             Map<String, String> data = new HashMap<String, String>();
             data.put(Constants.KEY_EMAIL, user.getEmail());
+            Log.d("TELECHAT",user.getEmail().toString());
             signInWithUserData(data);
 
         }
@@ -95,7 +96,6 @@ public class SignInActivity extends AppCompatActivity {
                 {
                     Map<String, String> data = new HashMap<String, String>();
                     data.put(Constants.KEY_EMAIL, binding.inputEmail.getText().toString());
-                    data.put(Constants.KEY_PASSWORD, binding.inputPassword.getText().toString());
                     signInWithUserData(data);
 
                 }
