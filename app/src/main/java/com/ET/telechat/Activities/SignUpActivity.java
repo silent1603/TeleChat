@@ -31,7 +31,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
 
-public class SignUpActivity extends AppCompatActivity {
+public class SignUpActivity extends AppCompatActivity
+{
 
     private ActivitySignUpBinding binding;
     private PreferenceManager preferenceManager;
@@ -39,7 +40,8 @@ public class SignUpActivity extends AppCompatActivity {
     private FirebaseAuth auth;
     private String encodedImage;
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState)
+    {
         super.onCreate(savedInstanceState);
         init();
         setListensers();

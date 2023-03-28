@@ -32,8 +32,8 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 
-public class SignInActivity extends AppCompatActivity {
-
+public class SignInActivity extends AppCompatActivity
+{
 
     ActivitySignInBinding binding;
     private PreferenceManager preferenceManager;
@@ -41,7 +41,8 @@ public class SignInActivity extends AppCompatActivity {
     private FirebaseAuth auth;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState)
+    {
         super.onCreate(savedInstanceState);
         init();
         setListensers();
@@ -49,7 +50,8 @@ public class SignInActivity extends AppCompatActivity {
         setContentView(binding.getRoot());
     }
 
-    private void init() {
+    private void init()
+    {
 
         auth = FirebaseAuth.getInstance();
         database = FirebaseFirestore.getInstance();
@@ -67,7 +69,8 @@ public class SignInActivity extends AppCompatActivity {
         binding = ActivitySignInBinding.inflate(getLayoutInflater());
     }
 
-    private void setListensers() {
+    private void setListensers()
+    {
         binding.textCreateNewAccount.setOnClickListener(v -> {
             startActivity(new Intent(getApplicationContext(), SignUpActivity.class));
         });
@@ -80,12 +83,14 @@ public class SignInActivity extends AppCompatActivity {
 
     }
 
-    private void config() {
+    private void config()
+    {
 
     }
 
 
-    private void signIn() {
+    private void signIn()
+    {
         loading(true);
         auth.signInWithEmailAndPassword(binding.inputEmail.getText().toString(), binding.inputPassword.getText().toString()).addOnCompleteListener(new OnCompleteListener<AuthResult>() {
             @Override
@@ -110,7 +115,8 @@ public class SignInActivity extends AppCompatActivity {
 
     }
 
-    private void signInWithUserData(Map<String, String> fields) {
+    private void signInWithUserData(Map<String, String> fields)
+    {
         Query query = database.collection(Constants.KEY_COLLECTION_USERS);
         Iterator<Map.Entry<String, String>> iterator = fields.entrySet().iterator();
 
@@ -199,7 +205,8 @@ public class SignInActivity extends AppCompatActivity {
     }
 
     @Override
-    public void onBackPressed() {
+    public void onBackPressed()
+    {
         if( binding.progressBar.getVisibility() != View.VISIBLE)
         {
             super.onBackPressed();

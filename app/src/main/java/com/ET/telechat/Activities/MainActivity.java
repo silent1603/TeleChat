@@ -27,14 +27,14 @@ import com.google.firebase.storage.FirebaseStorage;
 
 import java.util.HashMap;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity
+{
     private FirebaseAuth auth;
     private FirebaseMessaging messagging;
     private FirebaseFirestore database;
     private ActivityMainBinding binding;
     private PreferenceManager preferenceManager;
     private String userName;
-    private String userImage;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -59,7 +59,6 @@ public class MainActivity extends AppCompatActivity {
     private void setupUI()
     {
         userName = preferenceManager.getString(Constants.KEY_NAME);
-        userImage = preferenceManager.getString(Constants.KEY_IMAGE);
         binding.textName.setText(userName);
         byte[] bytes = Base64.decode(preferenceManager.getString(Constants.KEY_IMAGE),Base64.DEFAULT);
         Bitmap bitmap = BitmapFactory.decodeByteArray(bytes,0, bytes.length);
@@ -103,7 +102,8 @@ public class MainActivity extends AppCompatActivity {
 
 
     @Override
-    public void onBackPressed() {
+    public void onBackPressed()
+    {
         if(auth.getCurrentUser() != null)
         {
 

@@ -15,7 +15,8 @@ import com.ET.telechat.databinding.ItemContainerUserBinding;
 
 import java.util.List;
 
-public class ChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
+public class ChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
+{
     private final List<ChatMessage> chatMessages;
     private final Bitmap receiverProfileImage;
     private final String senderId;
@@ -23,7 +24,8 @@ public class ChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     public static final int VIEW_TYPE_SENT = 1;
     public static final int VIEW_TYPE_RECEIVED = 2;
 
-    public ChatAdapter(List<ChatMessage> chatMessages, Bitmap receiverProfileImage, String senderId) {
+    public ChatAdapter(List<ChatMessage> chatMessages, Bitmap receiverProfileImage, String senderId)
+    {
         this.chatMessages = chatMessages;
         this.receiverProfileImage = receiverProfileImage;
         this.senderId = senderId;
@@ -62,7 +64,8 @@ public class ChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     }
 
     @Override
-    public int getItemViewType(int position) {
+    public int getItemViewType(int position)
+    {
         if(chatMessages.get(position).getSenderId().equals(senderId))
         {
             return  VIEW_TYPE_SENT;

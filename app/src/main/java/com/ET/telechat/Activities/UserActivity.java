@@ -18,14 +18,16 @@ import com.google.firebase.firestore.QueryDocumentSnapshot;
 import java.util.ArrayList;
 import java.util.List;
 
-public class UserActivity extends AppCompatActivity implements UserListener {
+public class UserActivity extends AppCompatActivity implements UserListener
+{
 
     private ActivityUserBinding binding;
 
     private FirebaseFirestore database;
     private PreferenceManager preferenceManager;
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState)
+    {
         super.onCreate(savedInstanceState);
         init();
         setListeners();
@@ -74,7 +76,8 @@ public class UserActivity extends AppCompatActivity implements UserListener {
                                    queryDocumentSnapshot.getString(Constants.KEY_NAME),
                                    queryDocumentSnapshot.getString(Constants.KEY_IMAGE),
                                    queryDocumentSnapshot.getString(Constants.KEY_FCM_TOKEN),
-                                   queryDocumentSnapshot.getString(Constants.KEY_EMAIL)
+                                   queryDocumentSnapshot.getString(Constants.KEY_EMAIL),
+                                   queryDocumentSnapshot.getId()
                            );
                            users.add(user);
 
@@ -117,7 +120,8 @@ public class UserActivity extends AppCompatActivity implements UserListener {
     }
 
     @Override
-    public void onUserClicked(Users user) {
+    public void onUserClicked(Users user)
+    {
         Intent intent = new Intent(getApplicationContext(),ChatActivity.class);
         intent.putExtra(Constants.KEY_USER,user);
         startActivity(intent);

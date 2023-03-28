@@ -15,11 +15,13 @@ import com.ET.telechat.databinding.ItemContainerUserBinding;
 
 import java.util.List;
 
-public class UsersAdapter extends RecyclerView.Adapter<UsersAdapter.UserViewHolder> {
+public class UsersAdapter extends RecyclerView.Adapter<UsersAdapter.UserViewHolder>
+{
 
     private final List<Users> users;
     private final UserListener userListener;
-    public UsersAdapter(List<Users> users,UserListener userListener) {
+    public UsersAdapter(List<Users> users,UserListener userListener)
+    {
 
         this.users = users;
         this.userListener = userListener;
@@ -27,13 +29,15 @@ public class UsersAdapter extends RecyclerView.Adapter<UsersAdapter.UserViewHold
 
     @NonNull
     @Override
-    public UserViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+    public UserViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType)
+    {
         ItemContainerUserBinding itemContainerUserBinding = ItemContainerUserBinding.inflate(LayoutInflater.from(parent.getContext()),parent,false);
         return new UserViewHolder(itemContainerUserBinding);
     }
 
     @Override
-    public void onBindViewHolder(@NonNull UserViewHolder holder, int position) {
+    public void onBindViewHolder(@NonNull UserViewHolder holder, int position)
+    {
             holder.setUserData(users.get(position));
     }
 
@@ -42,7 +46,8 @@ public class UsersAdapter extends RecyclerView.Adapter<UsersAdapter.UserViewHold
         return users.size();
     }
 
-    class UserViewHolder extends RecyclerView.ViewHolder{
+    class UserViewHolder extends RecyclerView.ViewHolder
+    {
 
         ItemContainerUserBinding binding;
 
@@ -55,7 +60,7 @@ public class UsersAdapter extends RecyclerView.Adapter<UsersAdapter.UserViewHold
         void setUserData(Users user)
         {
             binding.textName.setText(user.getName());
-            binding.textName.setText(user.getEmail());
+            binding.textMail.setText(user.getEmail());
             binding.imageProfile.setImageBitmap(getUserImage(user.getProfilePic()));
             binding.getRoot().setOnClickListener( v -> userListener.onUserClicked(user));
         }
