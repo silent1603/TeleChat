@@ -184,7 +184,7 @@ public class ChatActivity extends BaseActivity {
                 if(value.getLong(Constants.KEY_AVAILABILITY) != null)
                 {
                     int availability = Objects.requireNonNull(value.getLong(Constants.KEY_AVAILABILITY).intValue());
-                    isReceiverAvailable = availability == 1;
+                    isReceiverAvailable = (availability == 1);
                 }
                 receiverUser.setToken(value.getString(Constants.KEY_FCM_TOKEN));
                 if(receiverUser.getProfilePic() == null)
@@ -284,8 +284,8 @@ public class ChatActivity extends BaseActivity {
     private  void addConversion(HashMap<String,Object> conversion)
     {
         database.collection(Constants.KEY_COLLECTION_CONVERSATIONS)
-                .add(conversion)
-                .addOnSuccessListener(documentReference -> conversationId = documentReference.getId());
+                .document(conversion.get(Constants.KEY_RECEIVER_ID)+"_"+conversion.get(Constants.KEY_SENDER_ID)).set(conversion)
+                .addOnSuccessListener(documentReference -> conversationId = conversion.get(Constants.KEY_RECEIVER_ID)+"_"+conversion.get(Constants.KEY_SENDER_ID));
     }
 
     private void updateConversion(String message)
@@ -300,9 +300,6 @@ public class ChatActivity extends BaseActivity {
             if(chatMessages.size() != 0)
             {
                 checkForConversionRemotely(preferenceManager.getString(Constants.KEY_USER_ID),receiverUser.getId());
-            }
-            else
-            {
                 checkForConversionRemotely(receiverUser.getId(),preferenceManager.getString(Constants.KEY_USER_ID));
             }
     }

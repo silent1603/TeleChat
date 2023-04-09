@@ -9,6 +9,7 @@ public class Users implements Serializable {
     private String email;
     private String id;
 
+    private String lastMessage;
     public Users()
     {
 

@@ -110,10 +110,12 @@ public class MainActivity extends BaseActivity implements ConversionListener
         {
             for(DocumentChange documentChange: value.getDocumentChanges())
             {
+                String senderId = documentChange.getDocument().getString(Constants.KEY_SENDER_ID);
+                String receiverId = documentChange.getDocument().getString(Constants.KEY_RECEIVER_ID);
+
                 if(documentChange.getType() == DocumentChange.Type.ADDED)
                 {
-                    String senderId = documentChange.getDocument().getString(Constants.KEY_SENDER_ID);
-                    String receiverId = documentChange.getDocument().getString(Constants.KEY_RECEIVER_ID);
+
                     ChatMessage chatMessage = new ChatMessage();
                     chatMessage.setSenderId(senderId);
                     chatMessage.setReceiverId(receiverId);
@@ -137,8 +139,6 @@ public class MainActivity extends BaseActivity implements ConversionListener
                 {
                     for(int i = 0 ; i < conversations.size();i++)
                     {
-                        String senderId = documentChange.getDocument().getString(Constants.KEY_SENDER_ID);
-                        String receiverId = documentChange.getDocument().getString(Constants.KEY_RECEIVER_ID);
                         if(conversations.get(i).getSenderId().equals(senderId) && conversations.get(i).getReceiverId().equals(receiverId))
                         {
                             conversations.get(i).setMessage(documentChange.getDocument().getString(Constants.KEY_LAST_MESSAGGE));
@@ -189,11 +189,13 @@ public class MainActivity extends BaseActivity implements ConversionListener
 
     private void signOut()
     {
+
         showToast(getApplicationContext(),"Signing out ...");
         String value = preferenceManager.getString(Constants.KEY_USER_ID);
         Log.d("USER_ID",value);
         auth.signOut();
         DocumentReference documentReference = database.collection(Constants.KEY_COLLECTION_USERS).document(preferenceManager.getString(Constants.KEY_USER_ID));
+        documentReference.update(Constants.KEY_AVAILABILITY,0);
         HashMap<String,Object> updates = new HashMap<>();
         updates.put(Constants.KEY_FCM_TOKEN, FieldValue.delete());
         documentReference.update(updates).addOnSuccessListener(

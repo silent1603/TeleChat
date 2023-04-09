@@ -36,7 +36,9 @@ public class BaseActivity extends AppCompatActivity {
 
     @Override
     protected void onResume() {
-        super.onResume();documentReference.update(Constants.KEY_AVAILABILITY,1);
+        super.onResume();
+        documentReference.update(Constants.KEY_AVAILABILITY,1);
 
     }
+    
 }
