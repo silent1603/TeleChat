@@ -147,6 +147,27 @@
         app:layout_constraintStart_toStartOf="parent"
         />
 
+    <ImageView
+        android:id="@+id/attachment"
+        android:layout_width="@dimen/_24sdp"
+        android:layout_height="wrap_content"
+        app:layout_constraintBottom_toBottomOf="@id/inputMessage"
+        app:layout_constraintEnd_toEndOf="@id/inputMessage"
+        app:layout_constraintEnd_toStartOf="@id/camera"
+        app:layout_constraintTop_toTopOf="@id/inputMessage"
+        app:srcCompat="@drawable/ic_attachment"
+        android:layout_marginRight="@dimen/_8sdp"/>
+
+    <ImageView
+        android:id="@+id/camera"
+        android:layout_width="@dimen/_24sdp"
+        android:layout_height="wrap_content"
+        app:layout_constraintBottom_toBottomOf="@id/inputMessage"
+        app:layout_constraintEnd_toEndOf="@id/inputMessage"
+        app:layout_constraintTop_toTopOf="@id/inputMessage"
+        app:srcCompat="@drawable/ic_camera"
+        android:layout_marginRight="@dimen/_8sdp"/>
+
     <TextView
         android:id="@+id/textAvailability"
         android:layout_width="match_parent"

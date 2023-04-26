@@ -2,28 +2,47 @@ package com.ET.telechat.Activities;
 
 import static com.ET.telechat.Utilities.UIHelpers.showToast;
 
+import android.app.Activity;
+import android.app.Dialog;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.drawable.ColorDrawable;
+import android.net.Uri;
 import android.os.Bundle;
 import android.util.Base64;
+import android.util.Log;
 import android.view.View;
+import android.widget.Toast;
+
+import androidx.activity.result.ActivityResult;
+import androidx.activity.result.ActivityResultCallback;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.annotation.NonNull;
 
 import com.ET.telechat.Adapters.ChatAdapter;
 import com.ET.telechat.Models.ChatMessage;
 import com.ET.telechat.Models.Users;
 import com.ET.telechat.Network.ApiClient;
 import com.ET.telechat.Network.ApiService;
+import com.ET.telechat.R;
 import com.ET.telechat.Utilities.Constants;
 import com.ET.telechat.Utilities.PreferenceManager;
 import com.ET.telechat.Utilities.UIHelpers;
 import com.ET.telechat.databinding.ActivityChatBinding;
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.DocumentChange;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QuerySnapshot;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -31,6 +50,7 @@ import org.json.JSONObject;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
@@ -45,14 +65,66 @@ import retrofit2.Response;
 
 public class ChatActivity extends BaseActivity {
 
+    //reference
     ActivityChatBinding binding;
     private Users receiverUser;
     private PreferenceManager preferenceManager;
     private List<ChatMessage> chatMessages;
     private ChatAdapter chatAdapter;
     private FirebaseFirestore database;
+
+    private FirebaseStorage storage;
     private String conversationId = null;
+
     private Boolean isReceiverAvailable = false;
+
+    //ui
+    Dialog loadingDialog = null;
+
+    //callback
+    ActivityResultLauncher<Intent> activityResultAttachmentLauncher=registerForActivityResult(new ActivityResultContracts.StartActivityForResult()
+            , new ActivityResultCallback<ActivityResult>() {
+        @Override
+        public void onActivityResult(ActivityResult result) {
+            int res = result.getResultCode();
+            Intent data = result.getData();
+            if(res == Activity.RESULT_OK) {
+                if(data != null) {
+                    if(data.getData() != null) {
+                        Uri selectedImage = data.getData();
+                        Calendar calendar = Calendar.getInstance();
+                        StorageReference reference = storage.getReference().child("chats").child(calendar.getTimeInMillis() + "");
+                        loadingDialog.show();
+                        reference.putFile(selectedImage).addOnCompleteListener(new OnCompleteListener<UploadTask.TaskSnapshot>() {
+                            @Override
+                            public void onComplete(@NonNull Task<UploadTask.TaskSnapshot> task) {
+                                loadingDialog.dismiss();
+                                if(task.isSuccessful()) {
+                                    reference.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
+                                        @Override
+                                        public void onSuccess(Uri uri) {
+                                            String filePath = uri.toString();
+
+                                            String messageTxt = binding.inputMessage.getText().toString();
+
+                                            Date date = new Date();
+                                            ChatMessage message = new ChatMessage(messageTxt, preferenceManager.getString(Constants.KEY_USER_ID), date);
+                                            message.setMessage("photo");
+                                            message.setImageUrl(filePath);
+
+                                            sendMessage(message);
+
+                                            Toast.makeText(ChatActivity.this, filePath, Toast.LENGTH_SHORT).show();
+                                        }
+                                    });
+                                }
+                            }
+                        });
+                    }
+                }
+            }
+        }
+    }) ;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -76,6 +148,72 @@ public class ChatActivity extends BaseActivity {
         }
 
 
+    }
+
+    private void sendMessage(ChatMessage messageContent)
+    {
+        HashMap<String, Object> message = new HashMap<>();
+        message.put(Constants.KEY_SENDER_ID, preferenceManager.getString(Constants.KEY_USER_ID));
+        message.put(Constants.KEY_RECEIVER_ID, receiverUser.getId());
+        boolean isSendContentFromInputMessage = false;
+        if(messageContent.getMessage() != null && !messageContent.getMessage().isEmpty())
+        {
+            message.put(Constants.KEY_MESSAGE, messageContent.getMessage());
+        }else
+        {
+            isSendContentFromInputMessage = true;
+            message.put(Constants.KEY_MESSAGE, binding.inputMessage.getText().toString());
+        }
+        message.put(Constants.KEY_TIMESTAMP, new Date());
+        if(messageContent.getImageUrl() != null && !messageContent.getImageUrl().isEmpty())
+        {
+            message.put(Constants.KEY_MESSAGE_IMAGE_URL,messageContent.getImageUrl());
+        }
+        database.collection(Constants.KEY_COLLECTION_CHAT).add(message);
+        if(conversationId != null)
+        {
+            updateConversion(binding.inputMessage.getText().toString());
+        }
+        else
+        {
+            HashMap<String,Object> conversion = new HashMap<>();
+            conversion.put(Constants.KEY_SENDER_ID,preferenceManager.getString(Constants.KEY_USER_ID));
+            conversion.put(Constants.KEY_SENDER_NAME,preferenceManager.getString(Constants.KEY_NAME));
+            conversion.put(Constants.KEY_SENDER_IMAGE,preferenceManager.getString(Constants.KEY_IMAGE));
+            conversion.put(Constants.KEY_RECEIVER_ID,receiverUser.getId());
+            conversion.put(Constants.KEY_RECEIVER_NAME,receiverUser.getName());
+            conversion.put(Constants.KEY_RECEIVER_IMAGE,receiverUser.getProfilePic());
+            conversion.put(Constants.KEY_LAST_MESSAGGE,binding.inputMessage.getText().toString());
+            conversion.put(Constants.KEY_TIMESTAMP,new Date());
+            addConversion(conversion);
+        }
+        if(!isReceiverAvailable)
+        {
+            try{
+                JSONArray tokens = new JSONArray();
+                tokens.put(receiverUser.getToken());
+
+                JSONObject data = new JSONObject();
+                data.put(Constants.KEY_USER_ID,preferenceManager.getString(Constants.KEY_USER_ID));
+                data.put(Constants.KEY_NAME,preferenceManager.getString(Constants.KEY_NAME));
+                data.put(Constants.KEY_FCM_TOKEN,preferenceManager.getString(Constants.KEY_FCM_TOKEN));
+                data.put(Constants.KEY_MESSAGE,binding.inputMessage.getText().toString());
+
+                JSONObject body = new JSONObject();
+                body.put(Constants.REMOTE_MSG_DATA,data);
+                body.put(Constants.REMOTE_MSG_REGISTRATION_IDS,tokens);
+
+                sendNotification(body.toString());
+            }
+            catch (Exception e)
+            {
+                showToast(getApplicationContext(),e.getMessage());
+            }
+        }
+        if(isSendContentFromInputMessage)
+        {
+            binding.inputMessage.setText(null);
+        }
     }
 
     private void sendMessage() {
@@ -231,6 +369,19 @@ public class ChatActivity extends BaseActivity {
                     chatMessage.setMessage(documentChange.getDocument().getString(Constants.KEY_MESSAGE));
                     chatMessage.setDateTime(getReadableDateTime(documentChange.getDocument().getDate(Constants.KEY_TIMESTAMP)));
                     chatMessage.setDataObject(documentChange.getDocument().getDate(Constants.KEY_TIMESTAMP));
+                    chatMessage.setMessageID(documentChange.getDocument().getId());
+                    if(documentChange.getDocument().contains(Constants.KEY_MESSAGE_IMAGE_URL))
+                    {
+                        chatMessage.setImageUrl(documentChange.getDocument().getString(Constants.KEY_MESSAGE_IMAGE_URL));
+                    }
+
+                    if(documentChange.getDocument().contains(Constants.KEY_MESSAGE_FEELING))
+                    {
+                        Long feelingValueRaw = documentChange.getDocument().getLong(Constants.KEY_MESSAGE_FEELING);
+                        chatMessage.setFeeling(feelingValueRaw.intValue());
+                    }
+
+
                     chatMessages.add(chatMessage);
                 }
             }
@@ -257,15 +408,41 @@ public class ChatActivity extends BaseActivity {
         loadReceiverDetails();
         preferenceManager = new PreferenceManager(getApplicationContext());
         chatMessages = new ArrayList<>();
-        chatAdapter = new ChatAdapter(chatMessages, getBitmapFromEncodedString(receiverUser.getProfilePic()), preferenceManager.getString(Constants.KEY_USER_ID));
-        binding.chatRecycleView.setAdapter(chatAdapter);
         database = FirebaseFirestore.getInstance();
-
+        storage = FirebaseStorage.getInstance();
+        chatAdapter = new ChatAdapter(getApplicationContext(),database,chatMessages, getBitmapFromEncodedString(receiverUser.getProfilePic()), preferenceManager.getString(Constants.KEY_USER_ID));
+        binding.chatRecycleView.setAdapter(chatAdapter);
+        loadingDialog = new Dialog(ChatActivity.this);
+        loadingDialog.setContentView(R.layout.dialog_loading);
+        if(loadingDialog.getWindow() != null)
+        {
+            loadingDialog.getWindow().setBackgroundDrawable(new ColorDrawable(0));
+        }
     }
 
     private void setListeners() {
         binding.imageBack.setOnClickListener(v -> onBackPressed());
         binding.layoutSend.setOnClickListener(v -> sendMessage());
+
+        binding.attachment.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent();
+                intent.setAction(Intent.ACTION_GET_CONTENT);
+                intent.setType("image/*");
+                activityResultAttachmentLauncher.launch(intent);
+            }
+        });
+
+        binding.viewBackground.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(chatAdapter.IsShowReaction())
+                {
+                    chatAdapter.SetShowReaction(false);
+                }
+            }
+        });
     }
 
     private void config() {

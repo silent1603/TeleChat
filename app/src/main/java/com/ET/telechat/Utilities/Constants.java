@@ -24,6 +24,10 @@ public class Constants
 
     public static final String KEY_MESSAGE = "message";
 
+    public static final String KEY_MESSAGE_ID = "messageID";
+    public static final String KEY_MESSAGE_FEELING = "feeling";
+
+    public static final String KEY_MESSAGE_IMAGE_URL= "image_url";
     public static final String KEY_TIMESTAMP = "timestamp";
 
     public static final String KEY_COLLECTION_CONVERSATIONS = "conversations";

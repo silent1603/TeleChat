@@ -3,6 +3,7 @@ package com.ET.telechat.Models;
 import java.util.Date;
 
 public class ChatMessage {
+    private String messageID;
     private String senderId ;
     private String receiverId;
     private String message;
@@ -15,9 +16,45 @@ public class ChatMessage {
 
     private String conversionImage;
 
+    private String imageUrl;
+
+    private int feeling = -1;
+
     public ChatMessage()
     {
 
+    }
+
+    public ChatMessage(String message,String sender,Date date)
+    {
+        this.message = message;
+        this.senderId = sender;
+        this.dataObject = date;
+    }
+
+
+    public String getImageUrl() {
+        return imageUrl;
+    }
+
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
+    }
+
+    public String getMessageID() {
+        return messageID;
+    }
+
+    public void setMessageID(String messageID) {
+        this.messageID = messageID;
+    }
+
+    public int getFeeling() {
+        return feeling;
+    }
+
+    public void setFeeling(int feeling) {
+        this.feeling = feeling;
     }
 
     public String getSenderId() {
