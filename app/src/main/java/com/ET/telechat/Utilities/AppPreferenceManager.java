@@ -3,11 +3,13 @@ package com.ET.telechat.Utilities;
 import android.content.Context;
 import android.content.SharedPreferences;
 
-public class PreferenceManager
+import org.jetbrains.annotations.NotNull;
+
+public class AppPreferenceManager
 {
     private final SharedPreferences sharedPreferences;
 
-    public PreferenceManager(Context context)
+    public AppPreferenceManager(Context context)
     {
         sharedPreferences = context.getSharedPreferences(Constants.KEY_PREFERENCE_NAME,Context.MODE_PRIVATE);
 
@@ -42,5 +44,10 @@ public class PreferenceManager
         SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.clear();
         editor.apply();
+    }
+
+    @NotNull
+    public static Object getDefaultSharedPreferences(@NotNull Context applicationContext) {
+        return applicationContext.getSharedPreferences(Constants.KEY_PREFERENCE_NAME,Context.MODE_PRIVATE);
     }
 }

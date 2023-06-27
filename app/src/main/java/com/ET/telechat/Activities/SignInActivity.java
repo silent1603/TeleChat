@@ -13,15 +13,13 @@ import android.view.View;
 
 
 import com.ET.telechat.Utilities.Constants;
-import com.ET.telechat.Utilities.PreferenceManager;
+import com.ET.telechat.Utilities.AppPreferenceManager;
 import com.ET.telechat.databinding.ActivitySignInBinding;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.firestore.CollectionReference;
-import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
@@ -29,14 +27,13 @@ import com.google.firebase.firestore.Query;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 
 public class SignInActivity extends AppCompatActivity
 {
 
     ActivitySignInBinding binding;
-    private PreferenceManager preferenceManager;
+    private AppPreferenceManager appPreferenceManager;
     private FirebaseFirestore database;
     private FirebaseAuth auth;
 
@@ -55,7 +52,7 @@ public class SignInActivity extends AppCompatActivity
 
         auth = FirebaseAuth.getInstance();
         database = FirebaseFirestore.getInstance();
-        preferenceManager = new PreferenceManager(getApplicationContext());
+        appPreferenceManager = new AppPreferenceManager(getApplicationContext());
         FirebaseUser user = auth.getCurrentUser();
         if (user != null) {
             Map<String, String> data = new HashMap<String, String>();
@@ -162,12 +159,12 @@ public class SignInActivity extends AppCompatActivity
     private void setPreferenceData(DocumentSnapshot document, Map<String, Object> userData)
 
     {
-        preferenceManager.putBoolean(Constants.KEY_IS_SIGNED_IN,true);
-        preferenceManager.putString(Constants.KEY_USER_ID,document.getId());
+        appPreferenceManager.putBoolean(Constants.KEY_IS_SIGNED_IN,true);
+        appPreferenceManager.putString(Constants.KEY_USER_ID,document.getId());
         Log.d("ERROR",document.getId());
-        preferenceManager.putString(Constants.KEY_NAME,userData.get("name").toString());
-        preferenceManager.putString(Constants.KEY_EMAIL,userData.get("email").toString());
-        preferenceManager.putString(Constants.KEY_IMAGE,userData.get("profilePic").toString());
+        appPreferenceManager.putString(Constants.KEY_NAME,userData.get("name").toString());
+        appPreferenceManager.putString(Constants.KEY_EMAIL,userData.get("email").toString());
+        appPreferenceManager.putString(Constants.KEY_IMAGE,userData.get("profilePic").toString());
     }
 
     private void loading(Boolean isLoading)

@@ -11,7 +11,6 @@ import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Base64;
-import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
 
@@ -28,8 +27,7 @@ import com.ET.telechat.Network.ApiClient;
 import com.ET.telechat.Network.ApiService;
 import com.ET.telechat.R;
 import com.ET.telechat.Utilities.Constants;
-import com.ET.telechat.Utilities.PreferenceManager;
-import com.ET.telechat.Utilities.UIHelpers;
+import com.ET.telechat.Utilities.AppPreferenceManager;
 import com.ET.telechat.databinding.ActivityChatBinding;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -68,7 +66,7 @@ public class ChatActivity extends BaseActivity {
     //reference
     ActivityChatBinding binding;
     private Users receiverUser;
-    private PreferenceManager preferenceManager;
+    private AppPreferenceManager appPreferenceManager;
     private List<ChatMessage> chatMessages;
     private ChatAdapter chatAdapter;
     private FirebaseFirestore database;
@@ -108,7 +106,7 @@ public class ChatActivity extends BaseActivity {
                                             String messageTxt = binding.inputMessage.getText().toString();
 
                                             Date date = new Date();
-                                            ChatMessage message = new ChatMessage(messageTxt, preferenceManager.getString(Constants.KEY_USER_ID), date);
+                                            ChatMessage message = new ChatMessage(messageTxt, appPreferenceManager.getString(Constants.KEY_USER_ID), date);
                                             message.setMessage("photo");
                                             message.setImageUrl(filePath);
 
@@ -153,7 +151,7 @@ public class ChatActivity extends BaseActivity {
     private void sendMessage(ChatMessage messageContent)
     {
         HashMap<String, Object> message = new HashMap<>();
-        message.put(Constants.KEY_SENDER_ID, preferenceManager.getString(Constants.KEY_USER_ID));
+        message.put(Constants.KEY_SENDER_ID, appPreferenceManager.getString(Constants.KEY_USER_ID));
         message.put(Constants.KEY_RECEIVER_ID, receiverUser.getId());
         boolean isSendContentFromInputMessage = false;
         if(messageContent.getMessage() != null && !messageContent.getMessage().isEmpty())
@@ -177,9 +175,9 @@ public class ChatActivity extends BaseActivity {
         else
         {
             HashMap<String,Object> conversion = new HashMap<>();
-            conversion.put(Constants.KEY_SENDER_ID,preferenceManager.getString(Constants.KEY_USER_ID));
-            conversion.put(Constants.KEY_SENDER_NAME,preferenceManager.getString(Constants.KEY_NAME));
-            conversion.put(Constants.KEY_SENDER_IMAGE,preferenceManager.getString(Constants.KEY_IMAGE));
+            conversion.put(Constants.KEY_SENDER_ID, appPreferenceManager.getString(Constants.KEY_USER_ID));
+            conversion.put(Constants.KEY_SENDER_NAME, appPreferenceManager.getString(Constants.KEY_NAME));
+            conversion.put(Constants.KEY_SENDER_IMAGE, appPreferenceManager.getString(Constants.KEY_IMAGE));
             conversion.put(Constants.KEY_RECEIVER_ID,receiverUser.getId());
             conversion.put(Constants.KEY_RECEIVER_NAME,receiverUser.getName());
             conversion.put(Constants.KEY_RECEIVER_IMAGE,receiverUser.getProfilePic());
@@ -194,9 +192,9 @@ public class ChatActivity extends BaseActivity {
                 tokens.put(receiverUser.getToken());
 
                 JSONObject data = new JSONObject();
-                data.put(Constants.KEY_USER_ID,preferenceManager.getString(Constants.KEY_USER_ID));
-                data.put(Constants.KEY_NAME,preferenceManager.getString(Constants.KEY_NAME));
-                data.put(Constants.KEY_FCM_TOKEN,preferenceManager.getString(Constants.KEY_FCM_TOKEN));
+                data.put(Constants.KEY_USER_ID, appPreferenceManager.getString(Constants.KEY_USER_ID));
+                data.put(Constants.KEY_NAME, appPreferenceManager.getString(Constants.KEY_NAME));
+                data.put(Constants.KEY_FCM_TOKEN, appPreferenceManager.getString(Constants.KEY_FCM_TOKEN));
                 data.put(Constants.KEY_MESSAGE,binding.inputMessage.getText().toString());
 
                 JSONObject body = new JSONObject();
@@ -218,7 +216,7 @@ public class ChatActivity extends BaseActivity {
 
     private void sendMessage() {
         HashMap<String, Object> message = new HashMap<>();
-        message.put(Constants.KEY_SENDER_ID, preferenceManager.getString(Constants.KEY_USER_ID));
+        message.put(Constants.KEY_SENDER_ID, appPreferenceManager.getString(Constants.KEY_USER_ID));
         message.put(Constants.KEY_RECEIVER_ID, receiverUser.getId());
         message.put(Constants.KEY_MESSAGE, binding.inputMessage.getText().toString());
         message.put(Constants.KEY_TIMESTAMP, new Date());
@@ -230,9 +228,9 @@ public class ChatActivity extends BaseActivity {
         else
         {
             HashMap<String,Object> conversion = new HashMap<>();
-            conversion.put(Constants.KEY_SENDER_ID,preferenceManager.getString(Constants.KEY_USER_ID));
-            conversion.put(Constants.KEY_SENDER_NAME,preferenceManager.getString(Constants.KEY_NAME));
-            conversion.put(Constants.KEY_SENDER_IMAGE,preferenceManager.getString(Constants.KEY_IMAGE));
+            conversion.put(Constants.KEY_SENDER_ID, appPreferenceManager.getString(Constants.KEY_USER_ID));
+            conversion.put(Constants.KEY_SENDER_NAME, appPreferenceManager.getString(Constants.KEY_NAME));
+            conversion.put(Constants.KEY_SENDER_IMAGE, appPreferenceManager.getString(Constants.KEY_IMAGE));
             conversion.put(Constants.KEY_RECEIVER_ID,receiverUser.getId());
             conversion.put(Constants.KEY_RECEIVER_NAME,receiverUser.getName());
             conversion.put(Constants.KEY_RECEIVER_IMAGE,receiverUser.getProfilePic());
@@ -247,9 +245,9 @@ public class ChatActivity extends BaseActivity {
                 tokens.put(receiverUser.getToken());
 
                 JSONObject data = new JSONObject();
-                data.put(Constants.KEY_USER_ID,preferenceManager.getString(Constants.KEY_USER_ID));
-                data.put(Constants.KEY_NAME,preferenceManager.getString(Constants.KEY_NAME));
-                data.put(Constants.KEY_FCM_TOKEN,preferenceManager.getString(Constants.KEY_FCM_TOKEN));
+                data.put(Constants.KEY_USER_ID, appPreferenceManager.getString(Constants.KEY_USER_ID));
+                data.put(Constants.KEY_NAME, appPreferenceManager.getString(Constants.KEY_NAME));
+                data.put(Constants.KEY_FCM_TOKEN, appPreferenceManager.getString(Constants.KEY_FCM_TOKEN));
                 data.put(Constants.KEY_MESSAGE,binding.inputMessage.getText().toString());
 
                 JSONObject body = new JSONObject();
@@ -346,12 +344,12 @@ public class ChatActivity extends BaseActivity {
 
     private void listenMessages() {
         database.collection(Constants.KEY_COLLECTION_CHAT)
-                .whereEqualTo(Constants.KEY_SENDER_ID, preferenceManager.getString(Constants.KEY_USER_ID))
+                .whereEqualTo(Constants.KEY_SENDER_ID, appPreferenceManager.getString(Constants.KEY_USER_ID))
                 .whereEqualTo(Constants.KEY_RECEIVER_ID, receiverUser.getId())
                 .addSnapshotListener(eventListener);
         database.collection(Constants.KEY_COLLECTION_CHAT)
                 .whereEqualTo(Constants.KEY_SENDER_ID, receiverUser.getId())
-                .whereEqualTo(Constants.KEY_RECEIVER_ID, preferenceManager.getString(Constants.KEY_USER_ID))
+                .whereEqualTo(Constants.KEY_RECEIVER_ID, appPreferenceManager.getString(Constants.KEY_USER_ID))
                 .addSnapshotListener(eventListener);
     }
 
@@ -406,11 +404,11 @@ public class ChatActivity extends BaseActivity {
     private void init() {
         binding = ActivityChatBinding.inflate(getLayoutInflater());
         loadReceiverDetails();
-        preferenceManager = new PreferenceManager(getApplicationContext());
+        appPreferenceManager = new AppPreferenceManager(getApplicationContext());
         chatMessages = new ArrayList<>();
         database = FirebaseFirestore.getInstance();
         storage = FirebaseStorage.getInstance();
-        chatAdapter = new ChatAdapter(getApplicationContext(),database,chatMessages, getBitmapFromEncodedString(receiverUser.getProfilePic()), preferenceManager.getString(Constants.KEY_USER_ID));
+        chatAdapter = new ChatAdapter(getApplicationContext(),database,chatMessages, getBitmapFromEncodedString(receiverUser.getProfilePic()), appPreferenceManager.getString(Constants.KEY_USER_ID));
         binding.chatRecycleView.setAdapter(chatAdapter);
         loadingDialog = new Dialog(ChatActivity.this);
         loadingDialog.setContentView(R.layout.dialog_loading);
@@ -476,8 +474,8 @@ public class ChatActivity extends BaseActivity {
     private void checkForConversion() {
             if(chatMessages.size() != 0)
             {
-                checkForConversionRemotely(preferenceManager.getString(Constants.KEY_USER_ID),receiverUser.getId());
-                checkForConversionRemotely(receiverUser.getId(),preferenceManager.getString(Constants.KEY_USER_ID));
+                checkForConversionRemotely(appPreferenceManager.getString(Constants.KEY_USER_ID),receiverUser.getId());
+                checkForConversionRemotely(receiverUser.getId(), appPreferenceManager.getString(Constants.KEY_USER_ID));
             }
     }
 

@@ -15,7 +15,7 @@ import com.ET.telechat.Listeners.ConversionListener;
 import com.ET.telechat.Models.ChatMessage;
 import com.ET.telechat.Models.Users;
 import com.ET.telechat.Utilities.Constants;
-import com.ET.telechat.Utilities.PreferenceManager;
+import com.ET.telechat.Utilities.AppPreferenceManager;
 import com.ET.telechat.databinding.ActivityMainBinding;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentChange;
@@ -37,7 +37,7 @@ public class MainActivity extends BaseActivity implements ConversionListener
     private FirebaseMessaging messagging;
     private FirebaseFirestore database;
     private ActivityMainBinding binding;
-    private PreferenceManager preferenceManager;
+    private AppPreferenceManager appPreferenceManager;
     private String userName;
 
     private List<ChatMessage> conversations;
@@ -61,7 +61,7 @@ public class MainActivity extends BaseActivity implements ConversionListener
         messagging = FirebaseMessaging.getInstance();
         database = FirebaseFirestore.getInstance();
         binding = ActivityMainBinding.inflate(getLayoutInflater());
-        preferenceManager = new PreferenceManager(getApplicationContext());
+        appPreferenceManager = new AppPreferenceManager(getApplicationContext());
         conversations =  new ArrayList<>();
         conversationsAdapter = new RecentConversationsAdapter(conversations,this);
         binding.conversationRecyclerView.setAdapter(conversationsAdapter);
@@ -69,9 +69,9 @@ public class MainActivity extends BaseActivity implements ConversionListener
 
     private void setupUI()
     {
-        userName = preferenceManager.getString(Constants.KEY_NAME);
+        userName = appPreferenceManager.getString(Constants.KEY_NAME);
         binding.textName.setText(userName);
-        byte[] bytes = Base64.decode(preferenceManager.getString(Constants.KEY_IMAGE),Base64.DEFAULT);
+        byte[] bytes = Base64.decode(appPreferenceManager.getString(Constants.KEY_IMAGE),Base64.DEFAULT);
         Bitmap bitmap = BitmapFactory.decodeByteArray(bytes,0, bytes.length);
         binding.imageProfile.setImageBitmap(bitmap);
 
@@ -81,9 +81,9 @@ public class MainActivity extends BaseActivity implements ConversionListener
 
     private void updateToken(String token)
     {
-        preferenceManager.putString(Constants.KEY_FCM_TOKEN,token);
+        appPreferenceManager.putString(Constants.KEY_FCM_TOKEN,token);
         database = FirebaseFirestore.getInstance();
-        DocumentReference documentReference = database.collection(Constants.KEY_COLLECTION_USERS).document(preferenceManager.getString(Constants.KEY_USER_ID));
+        DocumentReference documentReference = database.collection(Constants.KEY_COLLECTION_USERS).document(appPreferenceManager.getString(Constants.KEY_USER_ID));
         documentReference.update(Constants.KEY_FCM_TOKEN,token)
                 .addOnFailureListener(e -> {
                     showToast(getApplicationContext(), "Unable to update token" + e.getMessage());
@@ -94,10 +94,10 @@ public class MainActivity extends BaseActivity implements ConversionListener
     private void listenConversations()
     {
         database.collection(Constants.KEY_COLLECTION_CONVERSATIONS)
-                .whereEqualTo(Constants.KEY_SENDER_ID,preferenceManager.getString(Constants.KEY_USER_ID))
+                .whereEqualTo(Constants.KEY_SENDER_ID, appPreferenceManager.getString(Constants.KEY_USER_ID))
                 .addSnapshotListener(eventListener);
         database.collection((Constants.KEY_COLLECTION_CONVERSATIONS))
-                .whereEqualTo(Constants.KEY_RECEIVER_ID,preferenceManager.getString(Constants.KEY_USER_ID))
+                .whereEqualTo(Constants.KEY_RECEIVER_ID, appPreferenceManager.getString(Constants.KEY_USER_ID))
                 .addSnapshotListener(eventListener);
     }
 
@@ -119,7 +119,7 @@ public class MainActivity extends BaseActivity implements ConversionListener
                     ChatMessage chatMessage = new ChatMessage();
                     chatMessage.setSenderId(senderId);
                     chatMessage.setReceiverId(receiverId);
-                    if(preferenceManager.getString(Constants.KEY_USER_ID).equals(senderId))
+                    if(appPreferenceManager.getString(Constants.KEY_USER_ID).equals(senderId))
                     {
                         chatMessage.setConversionImage(documentChange.getDocument().getString(Constants.KEY_RECEIVER_IMAGE));
                         chatMessage.setConversionName(documentChange.getDocument().getString(Constants.KEY_RECEIVER_NAME));
@@ -191,10 +191,10 @@ public class MainActivity extends BaseActivity implements ConversionListener
     {
 
         showToast(getApplicationContext(),"Signing out ...");
-        String value = preferenceManager.getString(Constants.KEY_USER_ID);
+        String value = appPreferenceManager.getString(Constants.KEY_USER_ID);
         Log.d("USER_ID",value);
         auth.signOut();
-        DocumentReference documentReference = database.collection(Constants.KEY_COLLECTION_USERS).document(preferenceManager.getString(Constants.KEY_USER_ID));
+        DocumentReference documentReference = database.collection(Constants.KEY_COLLECTION_USERS).document(appPreferenceManager.getString(Constants.KEY_USER_ID));
         documentReference.update(Constants.KEY_AVAILABILITY,0);
         HashMap<String,Object> updates = new HashMap<>();
         updates.put(Constants.KEY_FCM_TOKEN, FieldValue.delete());
@@ -202,7 +202,7 @@ public class MainActivity extends BaseActivity implements ConversionListener
                 unused -> {
                     if(auth.getCurrentUser() == null )
                     {
-                        preferenceManager.clear();
+                        appPreferenceManager.clear();
                     }
                     finish();
                 }).addOnFailureListener(e -> showToast(getApplicationContext(),"unable to sign out"));

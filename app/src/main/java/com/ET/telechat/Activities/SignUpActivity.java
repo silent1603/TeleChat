@@ -19,7 +19,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.ET.telechat.Models.Users;
 import com.ET.telechat.Utilities.Constants;
-import com.ET.telechat.Utilities.PreferenceManager;
+import com.ET.telechat.Utilities.AppPreferenceManager;
 import com.ET.telechat.databinding.ActivitySignUpBinding;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
@@ -35,7 +35,7 @@ public class SignUpActivity extends AppCompatActivity
 {
 
     private ActivitySignUpBinding binding;
-    private PreferenceManager preferenceManager;
+    private AppPreferenceManager appPreferenceManager;
     private FirebaseFirestore database;
     private FirebaseAuth auth;
     private String encodedImage;
@@ -55,7 +55,7 @@ public class SignUpActivity extends AppCompatActivity
         binding = ActivitySignUpBinding.inflate(getLayoutInflater());
         database = FirebaseFirestore.getInstance();
         auth = FirebaseAuth.getInstance();
-        preferenceManager = new PreferenceManager(getApplicationContext());
+        appPreferenceManager = new AppPreferenceManager(getApplicationContext());
     }
 
     private void setListensers()
@@ -99,11 +99,11 @@ public class SignUpActivity extends AppCompatActivity
                             .add(user)
                             .addOnSuccessListener(documentReference -> {
                                 loading(false);
-                                preferenceManager.putBoolean(Constants.KEY_IS_SIGNED_IN,true);
-                                preferenceManager.putString(Constants.KEY_USER_ID,documentReference.getId());
-                                preferenceManager.putString(Constants.KEY_NAME,binding.inputName.getText().toString());
-                                preferenceManager.putString(Constants.KEY_EMAIL,binding.inputEmail.getText().toString());
-                                preferenceManager.putString(Constants.KEY_IMAGE,encodedImage);
+                                appPreferenceManager.putBoolean(Constants.KEY_IS_SIGNED_IN,true);
+                                appPreferenceManager.putString(Constants.KEY_USER_ID,documentReference.getId());
+                                appPreferenceManager.putString(Constants.KEY_NAME,binding.inputName.getText().toString());
+                                appPreferenceManager.putString(Constants.KEY_EMAIL,binding.inputEmail.getText().toString());
+                                appPreferenceManager.putString(Constants.KEY_IMAGE,encodedImage);
                                 Intent intent = new Intent(getApplicationContext(),MainActivity.class);
                                 intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                                 startActivity(intent);

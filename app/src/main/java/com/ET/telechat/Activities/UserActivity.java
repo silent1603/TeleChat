@@ -8,7 +8,7 @@ import com.ET.telechat.Adapters.UsersAdapter;
 import com.ET.telechat.Listeners.UserListener;
 import com.ET.telechat.Models.Users;
 import com.ET.telechat.Utilities.Constants;
-import com.ET.telechat.Utilities.PreferenceManager;
+import com.ET.telechat.Utilities.AppPreferenceManager;
 import com.ET.telechat.databinding.ActivityUserBinding;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
@@ -22,7 +22,7 @@ public class UserActivity extends BaseActivity implements UserListener
     private ActivityUserBinding binding;
 
     private FirebaseFirestore database;
-    private PreferenceManager preferenceManager;
+    private AppPreferenceManager appPreferenceManager;
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
@@ -37,7 +37,7 @@ public class UserActivity extends BaseActivity implements UserListener
     private void init()
     {
         binding = ActivityUserBinding.inflate(getLayoutInflater());
-        preferenceManager = new PreferenceManager(getApplicationContext());
+        appPreferenceManager = new AppPreferenceManager(getApplicationContext());
         database = FirebaseFirestore.getInstance();
     }
 
@@ -60,7 +60,7 @@ public class UserActivity extends BaseActivity implements UserListener
                 .addOnCompleteListener( task ->
                 {
                    loading(false);
-                   String currentUserID = preferenceManager.getString(Constants.KEY_USER_ID);
+                   String currentUserID = appPreferenceManager.getString(Constants.KEY_USER_ID);
                    if(task.isSuccessful() && task.getResult() != null)
                    {
                        List<Users> users = new ArrayList<>();
