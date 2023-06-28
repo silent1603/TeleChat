@@ -168,6 +168,7 @@ public class MainActivity extends BaseActivity implements ConversionListener
         binding.fabNewChat.setOnClickListener(v -> {
             startActivity(new Intent(getApplicationContext(),UserActivity.class));
         });
+        binding.fallPreveting.setOnClickListener(v -> {startActivity(new Intent(getApplicationContext(),FallDetector.class));});
     }
 
     private void config()

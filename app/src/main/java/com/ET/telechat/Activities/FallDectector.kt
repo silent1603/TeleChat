@@ -8,6 +8,7 @@ import android.view.View
 import android.view.WindowManager
 import android.webkit.WebView
 import android.widget.Button
+import androidx.appcompat.app.ActionBar
 import androidx.appcompat.app.AppCompatActivity
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.AppBarConfiguration
@@ -42,6 +43,7 @@ class FallDetector : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 //        Detector.instance(this)
+        supportActionBar?.show()
         val binding = ActivityFallDectectorBinding.inflate(layoutInflater)
         setContentView(binding.root)
         val navView: BottomNavigationView = binding.navigation
@@ -50,6 +52,7 @@ class FallDetector : AppCompatActivity() {
         val navController = navHostFragment.navController
         val appBarConfiguration =
             AppBarConfiguration(setOf(R.id.about, R.id.signals, R.id.settings))
+
         setupActionBarWithNavController(navController, appBarConfiguration)
         navView.setupWithNavController(navController)
         eula(this)
